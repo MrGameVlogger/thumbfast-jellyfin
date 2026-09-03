@@ -9,7 +9,7 @@
 --
 -- Requirements:
 --   - curl (system default at /usr/bin/curl)
---   - ffmpeg (Homebrew at /opt/homebrew/bin/ffmpeg, or symlinked to /usr/local/bin)
+--   - ffmpeg (must be in PATH)
 --   - Jellyfin server with Trickplay enabled
 --   - Any thumbfast-compatible OSC (ModernX, uosc, etc.)
 --
@@ -63,7 +63,7 @@ local trickplay = {
     scaled_w = 0, scaled_h = 0,
 }
 local CURL = "curl"
-local FFMPEG = "/opt/homebrew/bin/ffmpeg"
+local FFMPEG = "ffmpeg"
 
 local function extract_jellyfin_info(path)
     local server = path:match("^(https?://[^/]+/[^/]+)") or path:match("^(https?://[^/]+)")
