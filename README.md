@@ -16,8 +16,8 @@ A drop-in replacement for [thumbfast](https://github.com/po5/thumbfast) that fet
 ## Requirements
 
 - [mpv](https://mpv.io/) v0.38.0 or later
-- [curl](https://curl.se/) (system default at `/usr/bin/curl`)
-- [ffmpeg](https://ffmpeg.org/) (Homebrew at `/opt/homebrew/bin/ffmpeg`, or symlinked to `/usr/local/bin`)
+- [curl](https://curl.se/) (usually pre-installed on most systems)
+- [ffmpeg](https://ffmpeg.org/) (must be in PATH)
 - Jellyfin server with Trickplay enabled
 - Any thumbfast-compatible OSC (see UI support below)
 
@@ -26,31 +26,24 @@ A drop-in replacement for [thumbfast](https://github.com/po5/thumbfast) that fet
 ### 1. Backup original thumbfast
 
 ```bash
-# macOS/Linux
 cp ~/.config/mpv/scripts/thumbfast.lua ~/.config/mpv/scripts/thumbfast-upstream.lua
-
-# Windows
-copy %APPDATA%\mpv\scripts\thumbfast.lua %APPDATA%\mpv\scripts\thumbfast-upstream.lua
 ```
 
 ### 2. Install thumbfast-jellyfin
 
-Download `thumbfast-jellyfin.lua` and place it in your mpv scripts directory:
+Download `thumbfast-jellyfin.lua` and place it in your mpv scripts directory as `thumbfast.lua`.
 
-- **macOS/Linux:** `~/.config/mpv/scripts/thumbfast.lua`
-- **Windows:** `%APPDATA%\mpv\scripts\thumbfast.lua`
+**Default locations:**
+- Linux/macOS: `~/.config/mpv/scripts/`
+- Windows: `%APPDATA%\mpv\scripts\`
 
 ### 3. Configure (optional)
 
-Copy default settings to your script-opts folder:
+Copy `thumbfast.conf` to your mpv script-opts directory.
 
-```bash
-# macOS/Linux
-cp thumbfast.conf ~/.config/mpv/script-opts/
-
-# Windows
-copy thumbfast.conf %APPDATA%\mpv\script-opts\
-```
+**Default locations:**
+- Linux/macOS: `~/.config/mpv/script-opts/`
+- Windows: `%APPDATA%\mpv\script-opts\`
 
 ## UI Support
 
@@ -75,7 +68,7 @@ For the vanilla mpv UI, use the [osc.lua fork](https://github.com/po5/thumbfast/
 
 Other frontends and older versions of mpv.net will need [standalone mpv](https://mpv.io/installation/) accessible within PATH. The easiest way is to copy standalone mpv files inside of your frontend's installation folder.
 
-## macOS
+## macOS Notes
 
 If your mpv install is an app bundle (e.g. stolendata builds), the script will work but you may notice the Dock shakes when generating the first thumbnail. To fix this, make sure the app is in your Applications folder, then run:
 
@@ -196,36 +189,19 @@ The script automatically calculates dimensions based on:
 
 ### ffmpeg not found
 
-Ensure ffmpeg is installed and accessible:
+Ensure ffmpeg is installed and accessible in your PATH:
 
-```bash
-# macOS (Homebrew)
-brew install ffmpeg
-
-# Linux (Ubuntu/Debian)
-sudo apt install ffmpeg
-
-# Linux (Fedora)
-sudo dnf install ffmpeg
-
-# Windows
-# Download from https://ffmpeg.org/ and add to PATH
-```
+- **Linux:** `sudo apt install ffmpeg` or `sudo dnf install ffmpeg`
+- **macOS:** `brew install ffmpeg`
+- **Windows:** Download from [ffmpeg.org](https://ffmpeg.org/) and add to PATH
 
 ### curl not found
 
 curl is included by default on most systems. If missing:
 
-```bash
-# macOS
-xcode-select --install
-
-# Linux (Ubuntu/Debian)
-sudo apt install curl
-
-# Linux (Fedora)
-sudo dnf install curl
-```
+- **Linux:** `sudo apt install curl` or `sudo dnf install curl`
+- **macOS:** `xcode-select --install`
+- **Windows:** Included in Windows 10+
 
 ## For UI Developers
 
