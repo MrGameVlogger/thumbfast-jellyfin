@@ -1,5 +1,10 @@
 # thumbfast-jellyfin
 
+[![License: MPL-2.0](https://img.shields.io/badge/License-MPL_2.0-blue.svg)](LICENSE)
+[![mpv](https://img.shields.io/badge/mpv-v0.38.0+-green.svg)](https://mpv.io/)
+[![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macos%20%7C%20windows-lightgrey.svg)]()
+[![GitHub release](https://img.shields.io/github/v/release/MrGameVlogger/thumbfast-jellyfin)](https://github.com/MrGameVlogger/thumbfast-jellyfin/releases)
+
 A drop-in replacement for [thumbfast](https://github.com/po5/thumbfast) that fetches pre-generated thumbnails from Jellyfin's Trickplay API instead of spawning a subprocess for local thumbnail generation.
 
 **Fork of [po5/thumbfast](https://github.com/po5/thumbfast)** — adds Jellyfin Trickplay support while maintaining full compatibility with the original script.
