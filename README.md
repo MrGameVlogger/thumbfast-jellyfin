@@ -9,7 +9,7 @@ A drop-in replacement for [thumbfast](https://github.com/po5/thumbfast) that fet
 - **Instant thumbnails** — Fetches pre-generated Trickplay tiles from Jellyfin server
 - **No subprocess overhead** — No need to decode video locally for thumbnails
 - **HiDPI support** — Automatically scales thumbnails for Retina/HiDPI displays
-- **Aspect ratio preservation** — Maintains correct16:9 (or original) aspect ratio
+- **Aspect ratio preservation** — Maintains correct 16:9 (or original) aspect ratio
 - **Fallback support** — Falls back to normal thumbfast for non-Jellyfin content
 - **Drop-in replacement** — Compatible with any thumbfast-compatible OSC
 
