@@ -65,6 +65,26 @@ thumbfast-jellyfin is compatible with any OSC that supports the original thumbfa
 - [mfpbar](https://codeberg.org/NRK/mpv-toolbox/src/branch/master/mfpbar)
 - [osc.lua](https://github.com/po5/thumbfast/blob/vanilla-osc/player/lua/osc.lua) (vanilla UI fork)
 
+For the vanilla mpv UI, use the [osc.lua fork](https://github.com/po5/thumbfast/blob/vanilla-osc/player/lua/osc.lua) from the original thumbfast repo.
+
+## mpv Frontends
+
+[ImPlay](https://tsl0922.github.io/ImPlay/) is auto-detected, but if you encounter issues set `mpv_path=ImPlay` in `script-opts/thumbfast.conf`.
+
+[mpv.net](https://github.com/mpvnet-player/mpv.net) is directly supported since v7, no special configuration is required.
+
+Other frontends and older versions of mpv.net will need [standalone mpv](https://mpv.io/installation/) accessible within PATH. The easiest way is to copy standalone mpv files inside of your frontend's installation folder.
+
+## macOS
+
+If your mpv install is an app bundle (e.g. stolendata builds), the script will work but you may notice the Dock shakes when generating the first thumbnail. To fix this, make sure the app is in your Applications folder, then run:
+
+```bash
+sudo ln -s /Applications/mpv.app/Contents/MacOS/mpv /usr/local/mpv
+```
+
+If you installed mpv via [Homebrew](https://brew.sh/), there are no issues.
+
 ## Configuration
 
 Configure via `script-opts/thumbfast.conf`:
