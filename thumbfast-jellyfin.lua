@@ -66,6 +66,17 @@ local trickplay = {
 local CURL = "curl"
 local FFMPEG = "ffmpeg"
 
+-- Helper to run subprocesses with correct PATH on macOS
+local os_name = mp.get_property("platform") or "linux"
+local function run_subprocess(args, async, callback)
+    local env = os_name == "darwin" and "PATH="..os.getenv("PATH") or nil
+    if async then
+        return mp.command_native_async({name="subprocess", playback_only=true, args=args, env=env}, callback)
+    else
+        return mp.command_native({name="subprocess", capture_stdout=true, capture_stderr=true, playback_only=false, args=args, env=env})
+    end
+end
+
 -- Cache directory
 local CACHE_DIR = (os.getenv("TEMP") or os.getenv("TMPDIR") or "/tmp") .. "/thumbfast-jellyfin-cache"
 
@@ -128,8 +139,7 @@ local function extract_jellyfin_info(path)
 end
 
 local function get_user_id(server, api_key)
-    local result = mp.command_native({name="subprocess", capture_stdout=true, capture_stderr=true, playback_only=false,
-        args={CURL, "-sS", "-H", "Authorization: MediaBrowser Token=\""..api_key.."\"", server.."/Users"}})
+    local result = run_subprocess({CURL, "-sS", "-H", "Authorization: MediaBrowser Token=\""..api_key.."\"", server.."/Users"})
     if result and result.status == 0 and result.stdout then
         local users = mp.utils.parse_json(result.stdout)
         if users and users[1] and users[1].Id then return users[1].Id end
@@ -139,8 +149,7 @@ end
 
 local function get_trickplay_info(server, item_id, api_key, user_id)
     local url = string.format("%s/Users/%s/Items/%s", server, user_id, item_id)
-    local result = mp.command_native({name="subprocess", capture_stdout=true, capture_stderr=true, playback_only=false,
-        args={CURL, "-sS", "-H", "Authorization: MediaBrowser Token=\""..api_key.."\"", url}})
+    local result = run_subprocess({CURL, "-sS", "-H", "Authorization: MediaBrowser Token=\""..api_key.."\"", url})
     if result and result.status == 0 and result.stdout then
         local json = mp.utils.parse_json(result.stdout)
         if json and json.Trickplay then
@@ -161,8 +170,7 @@ end
 local function download_trickplay_tile(server, item_id, api_key, width, index)
     local url = string.format("%s/Videos/%s/Trickplay/%d/%d.jpg", server, item_id, width, index)
     local tmpfile = os.tmpname()..".jpg"
-    local result = mp.command_native({name="subprocess", capture_stdout=true, capture_stderr=true, playback_only=false,
-        args={CURL, "-sS", "-L", "-H", "Authorization: MediaBrowser Token=\""..api_key.."\"", "-o", tmpfile, url}})
+    local result = run_subprocess({CURL, "-sS", "-L", "-H", "Authorization: MediaBrowser Token=\""..api_key.."\"", "-o", tmpfile, url})
     if result and result.status == 0 then
         local f = io.open(tmpfile, "rb")
         if f then local s = f:seek("end"); f:close(); if s and s > 0 then return tmpfile end end
@@ -205,8 +213,7 @@ local function load_trickplay_async(server, item_id, api_key, info, scaled_w, sc
 
         -- Convert tile to BGRA
         local tile_bgra = jpg:gsub("%.jpg$", ".bgra")
-        local r = mp.command_native({name="subprocess", capture_stdout=true, capture_stderr=true, playback_only=false,
-            args={FFMPEG, "-y", "-i", jpg, "-vf", string.format("scale=%d:%d", scaled_w * info.tiles_x, scaled_h * info.tiles_y), "-pix_fmt", "bgra", "-f", "rawvideo", tile_bgra}})
+        local r = run_subprocess({FFMPEG, "-y", "-i", jpg, "-vf", string.format("scale=%d:%d", scaled_w * info.tiles_x, scaled_h * info.tiles_y), "-pix_fmt", "bgra", "-f", "rawvideo", tile_bgra})
         os.remove(jpg)
 
         if r and r.status == 0 then
