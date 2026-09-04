@@ -66,10 +66,21 @@ local trickplay = {
 local CURL = "curl"
 local FFMPEG = "ffmpeg"
 
+-- Find ffmpeg at startup (macOS Homebrew or system)
+local function find_ffmpeg()
+    local paths = {"/opt/homebrew/bin/ffmpeg", "/usr/local/bin/ffmpeg", "/usr/bin/ffmpeg"}
+    for _, p in ipairs(paths) do
+        local f = io.open(p, "r")
+        if f then f:close(); return p end
+    end
+    return "ffmpeg"  -- fallback to PATH
+end
+FFMPEG = find_ffmpeg()
+
 -- Helper to run subprocesses with correct PATH on macOS
 local os_name = mp.get_property("platform") or "linux"
 local function run_subprocess(args, async, callback)
-    local env = os_name == "darwin" and "PATH="..os.getenv("PATH") or nil
+    local env = os_name == "darwin" and "PATH=/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/usr/local/bin" or nil
     if async then
         return mp.command_native_async({name="subprocess", playback_only=true, args=args, env=env}, callback)
     else
