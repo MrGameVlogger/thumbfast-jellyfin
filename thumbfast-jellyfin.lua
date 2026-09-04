@@ -60,10 +60,64 @@ local trickplay = {
     tile_width = 0, tile_height = 0, interval = 0,
     tiles_x = 0, tiles_y = 0, thumbnail_count = 0,
     tile_file = nil, last_frame = -1, last_x = nil, last_y = nil, is_shown = false,
-    scaled_w = 0, scaled_h = 0,
+    scaled_w = 0, scaled_h = 0, frames_written = 0,
+    loading = false,
 }
 local CURL = "curl"
 local FFMPEG = "ffmpeg"
+
+-- Cache directory
+local CACHE_DIR = (os.getenv("TEMP") or os.getenv("TMPDIR") or "/tmp") .. "/thumbfast-jellyfin-cache"
+
+local function ensure_cache_dir()
+    os.execute("mkdir -p \"" .. CACHE_DIR .. "\"")
+end
+
+local function get_cache_path(item_id, scaled_w, scaled_h, tiles_x, tiles_y)
+    return CACHE_DIR .. "/" .. item_id .. "_" .. scaled_w .. "x" .. scaled_h .. "_" .. tiles_x .. "x" .. tiles_y .. ".bgra"
+end
+
+local function get_cache_info_path(item_id, scaled_w, scaled_h, tiles_x, tiles_y)
+    return CACHE_DIR .. "/" .. item_id .. "_" .. scaled_w .. "x" .. scaled_h .. "_" .. tiles_x .. "x" .. tiles_y .. ".info"
+end
+
+local function load_from_cache(item_id, scaled_w, scaled_h, tiles_x, tiles_y)
+    local cache_path = get_cache_path(item_id, scaled_w, scaled_h, tiles_x, tiles_y)
+    local info_path = get_cache_info_path(item_id, scaled_w, scaled_h, tiles_x, tiles_y)
+
+    local f = io.open(cache_path, "rb")
+    if not f then return nil, 0 end
+
+    local info_f = io.open(info_path, "r")
+    if not info_f then f:close(); return nil, 0 end
+
+    local frames = tonumber(info_f:read("*l")) or 0
+    info_f:close()
+    f:close()
+
+    if frames > 0 then
+        return cache_path, frames
+    end
+    return nil, 0
+end
+
+local function save_to_cache(item_id, scaled_w, scaled_h, tiles_x, tiles_y, bgra_path, frames)
+    ensure_cache_dir()
+    local cache_path = get_cache_path(item_id, scaled_w, scaled_h, tiles_x, tiles_y)
+    local info_path = get_cache_info_path(item_id, scaled_w, scaled_h, tiles_x, tiles_y)
+
+    -- Move BGRA file to cache
+    os.rename(bgra_path, cache_path)
+
+    -- Save frame count
+    local info_f = io.open(info_path, "w")
+    if info_f then
+        info_f:write(tostring(frames) .. "\n")
+        info_f:close()
+    end
+
+    return cache_path
+end
 
 local function extract_jellyfin_info(path)
     local server = path:match("^(https?://[^/]+/[^/]+)") or path:match("^(https?://[^/]+)")
@@ -118,8 +172,80 @@ local function download_trickplay_tile(server, item_id, api_key, width, index)
 end
 
 local function cleanup_trickplay()
-    if trickplay.tile_file then os.remove(trickplay.tile_file); trickplay.tile_file = nil end
-    trickplay.active = false; trickplay.last_frame = -1
+    -- Don't remove cached files
+    if trickplay.tile_file and not trickplay.cached then
+        os.remove(trickplay.tile_file)
+    end
+    trickplay.tile_file = nil
+    trickplay.active = false
+    trickplay.last_frame = -1
+    trickplay.loading = false
+end
+
+local function load_trickplay_async(server, item_id, api_key, info, scaled_w, scaled_h)
+    trickplay.loading = true
+    mp.osd_message("Loading thumbnails...", 2)
+
+    -- Calculate how many tile images we need
+    local tiles_per_image = info.tiles_x * info.tiles_y
+    local num_tiles = math.ceil(info.thumbnail_count / tiles_per_image)
+
+    -- Download and concatenate all tiles into one flat BGRA file
+    local final_bgra = os.tmpname() .. ".bgra"
+    local out = io.open(final_bgra, "wb")
+    if not out then mp.msg.warn("[thumbfast] Failed to create output file"); trickplay.loading = false; return end
+
+    local frames_written = 0
+    for i = 0, num_tiles - 1 do
+        local jpg = download_trickplay_tile(server, item_id, api_key, info.width, i)
+        if not jpg then
+            mp.msg.warn("[thumbfast] Failed to download Trickplay tile " .. i)
+            break
+        end
+
+        -- Convert tile to BGRA
+        local tile_bgra = jpg:gsub("%.jpg$", ".bgra")
+        local r = mp.command_native({name="subprocess", capture_stdout=true, capture_stderr=true, playback_only=false,
+            args={FFMPEG, "-y", "-i", jpg, "-vf", string.format("scale=%d:%d", scaled_w * info.tiles_x, scaled_h * info.tiles_y), "-pix_fmt", "bgra", "-f", "rawvideo", tile_bgra}})
+        os.remove(jpg)
+
+        if r and r.status == 0 then
+            -- Read tile and append to final file
+            local tile_file = io.open(tile_bgra, "rb")
+            if tile_file then
+                local data = tile_file:read("*a")
+                tile_file:close()
+                if data then
+                    out:write(data)
+                    local tile_frames = tiles_per_image
+                    if i == num_tiles - 1 then
+                        tile_frames = info.thumbnail_count - (i * tiles_per_image)
+                    end
+                    frames_written = frames_written + tile_frames
+                end
+            end
+        end
+        os.remove(tile_bgra)
+    end
+
+    out:close()
+
+    if frames_written == 0 then
+        os.remove(final_bgra)
+        mp.msg.warn("[thumbfast] No frames written")
+        trickplay.loading = false
+        return
+    end
+
+    -- Save to cache
+    local cached_path = save_to_cache(item_id, scaled_w, scaled_h, info.tiles_x, info.tiles_y, final_bgra, frames_written)
+
+    trickplay.tile_file = cached_path
+    trickplay.frames_written = frames_written
+    trickplay.active = true
+    trickplay.cached = true
+    trickplay.loading = false
+    mp.msg.info("[thumbfast] Trickplay loaded: "..info.width.."x"..info.height.." -> "..scaled_w.."x"..scaled_h..", "..info.tiles_x.."x"..info.tiles_y.." tiles, "..frames_written.." frames (cached)")
 end
 
 local function init_trickplay()
@@ -152,61 +278,19 @@ local function init_trickplay()
     trickplay.scaled_w = scaled_w
     trickplay.scaled_h = scaled_h
 
-    -- Calculate how many tile images we need
-    local tiles_per_image = info.tiles_x * info.tiles_y
-    local num_tiles = math.ceil(info.thumbnail_count / tiles_per_image)
-
-    -- Download and concatenate all tiles into one flat BGRA file
-    local final_bgra = os.tmpname() .. ".bgra"
-    local out = io.open(final_bgra, "wb")
-    if not out then mp.msg.warn("[thumbfast] Failed to create output file"); return false end
-
-    local frames_written = 0
-    for i = 0, num_tiles - 1 do
-        local jpg = download_trickplay_tile(server, item_id, api_key, info.width, i)
-        if not jpg then
-            mp.msg.warn("[thumbfast] Failed to download Trickplay tile " .. i)
-            break
-        end
-
-        -- Convert tile to BGRA
-        local tile_bgra = jpg:gsub("%.jpg$", ".bgra")
-        local r = mp.command_native({name="subprocess", capture_stdout=true, capture_stderr=true, playback_only=false,
-            args={FFMPEG, "-y", "-i", jpg, "-vf", string.format("scale=%d:%d", scaled_w * info.tiles_x, scaled_h * info.tiles_y), "-pix_fmt", "bgra", "-f", "rawvideo", tile_bgra}})
-        os.remove(jpg)
-
-        if r and r.status == 0 then
-            -- Read tile and append to final file
-            local tile_file = io.open(tile_bgra, "rb")
-            if tile_file then
-                local data = tile_file:read("*a")
-                tile_file:close()
-                if data then
-                    out:write(data)
-                    local tile_frames = tiles_per_image
-                    if i == num_tiles - 1 then
-                        -- Last tile may have fewer frames
-                        tile_frames = info.thumbnail_count - (i * tiles_per_image)
-                    end
-                    frames_written = frames_written + tile_frames
-                end
-            end
-        end
-        os.remove(tile_bgra)
+    -- Check cache first
+    local cached_path, cached_frames = load_from_cache(item_id, scaled_w, scaled_h, info.tiles_x, info.tiles_y)
+    if cached_path and cached_frames > 0 then
+        trickplay.tile_file = cached_path
+        trickplay.frames_written = cached_frames
+        trickplay.active = true
+        trickplay.cached = true
+        mp.msg.info("[thumbfast] Trickplay loaded from cache: "..scaled_w.."x"..scaled_h..", "..cached_frames.." frames")
+        return true
     end
 
-    out:close()
-
-    if frames_written == 0 then
-        os.remove(final_bgra)
-        mp.msg.warn("[thumbfast] No frames written")
-        return false
-    end
-
-    trickplay.tile_file = final_bgra
-    trickplay.frames_written = frames_written
-    trickplay.active = true
-    mp.msg.info("[thumbfast] Trickplay loaded: "..info.width.."x"..info.height.." -> "..scaled_w.."x"..scaled_h..", "..info.tiles_x.."x"..info.tiles_y.." tiles, "..frames_written.." frames")
+    -- Cache miss - load async
+    load_trickplay_async(server, item_id, api_key, info, scaled_w, scaled_h)
     return true
 end
 
