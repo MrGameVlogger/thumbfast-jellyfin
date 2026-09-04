@@ -117,14 +117,6 @@ local function download_trickplay_tile(server, item_id, api_key, width, index)
     return nil
 end
 
-local function convert_to_bgra(jpg, w, h)
-    local bgra = jpg:gsub("%.jpg$", ".bgra")
-    local r = mp.command_native({name="subprocess", capture_stdout=true, capture_stderr=true, playback_only=false,
-        args={FFMPEG, "-y", "-i", jpg, "-vf", string.format("scale=%d:%d", w, h), "-pix_fmt", "bgra", "-f", "rawvideo", bgra}})
-    if r and r.status == 0 then os.remove(jpg); return bgra end
-    os.remove(jpg); os.remove(bgra); return nil
-end
-
 local function cleanup_trickplay()
     if trickplay.tile_file then os.remove(trickplay.tile_file); trickplay.tile_file = nil end
     trickplay.active = false; trickplay.last_frame = -1
@@ -160,12 +152,61 @@ local function init_trickplay()
     trickplay.scaled_w = scaled_w
     trickplay.scaled_h = scaled_h
 
-    local jpg = download_trickplay_tile(server, item_id, api_key, info.width, 0)
-    if not jpg then mp.msg.warn("[thumbfast] Failed to download Trickplay tile"); return false end
-    local bgra = convert_to_bgra(jpg, scaled_w * info.tiles_x, scaled_h * info.tiles_y)
-    if not bgra then mp.msg.warn("[thumbfast] Failed to convert Trickplay tile"); return false end
-    trickplay.tile_file = bgra; trickplay.active = true
-    mp.msg.info("[thumbfast] Trickplay loaded: "..info.width.."x"..info.height.." -> "..scaled_w.."x"..scaled_h..", "..info.tiles_x.."x"..info.tiles_y.." tiles")
+    -- Calculate how many tile images we need
+    local tiles_per_image = info.tiles_x * info.tiles_y
+    local num_tiles = math.ceil(info.thumbnail_count / tiles_per_image)
+
+    -- Download and concatenate all tiles into one flat BGRA file
+    local final_bgra = os.tmpname() .. ".bgra"
+    local out = io.open(final_bgra, "wb")
+    if not out then mp.msg.warn("[thumbfast] Failed to create output file"); return false end
+
+    local frames_written = 0
+    for i = 0, num_tiles - 1 do
+        local jpg = download_trickplay_tile(server, item_id, api_key, info.width, i)
+        if not jpg then
+            mp.msg.warn("[thumbfast] Failed to download Trickplay tile " .. i)
+            break
+        end
+
+        -- Convert tile to BGRA
+        local tile_bgra = jpg:gsub("%.jpg$", ".bgra")
+        local r = mp.command_native({name="subprocess", capture_stdout=true, capture_stderr=true, playback_only=false,
+            args={FFMPEG, "-y", "-i", jpg, "-vf", string.format("scale=%d:%d", scaled_w * info.tiles_x, scaled_h * info.tiles_y), "-pix_fmt", "bgra", "-f", "rawvideo", tile_bgra}})
+        os.remove(jpg)
+
+        if r and r.status == 0 then
+            -- Read tile and append to final file
+            local tile_file = io.open(tile_bgra, "rb")
+            if tile_file then
+                local data = tile_file:read("*a")
+                tile_file:close()
+                if data then
+                    out:write(data)
+                    local tile_frames = tiles_per_image
+                    if i == num_tiles - 1 then
+                        -- Last tile may have fewer frames
+                        tile_frames = info.thumbnail_count - (i * tiles_per_image)
+                    end
+                    frames_written = frames_written + tile_frames
+                end
+            end
+        end
+        os.remove(tile_bgra)
+    end
+
+    out:close()
+
+    if frames_written == 0 then
+        os.remove(final_bgra)
+        mp.msg.warn("[thumbfast] No frames written")
+        return false
+    end
+
+    trickplay.tile_file = final_bgra
+    trickplay.frames_written = frames_written
+    trickplay.active = true
+    mp.msg.info("[thumbfast] Trickplay loaded: "..info.width.."x"..info.height.." -> "..scaled_w.."x"..scaled_h..", "..info.tiles_x.."x"..info.tiles_y.." tiles, "..frames_written.." frames")
     return true
 end
 
@@ -173,7 +214,7 @@ local function trickplay_thumb(time, x, y)
     if not trickplay.active or not trickplay.tile_file then return end
     local frame = math.floor(time / (trickplay.interval / 1000))
     if frame < 0 then frame = 0 end
-    if frame >= trickplay.thumbnail_count then frame = trickplay.thumbnail_count - 1 end
+    if frame >= trickplay.frames_written then frame = trickplay.frames_written - 1 end
     local fit = frame % (trickplay.tiles_x * trickplay.tiles_y)
     local gx = fit % trickplay.tiles_x
     local gy = math.floor(fit / trickplay.tiles_x)
