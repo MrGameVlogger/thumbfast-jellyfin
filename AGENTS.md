@@ -35,6 +35,13 @@
 - Check https://github.com/po5/thumbfast for updates
 - Local modifications: Trickplay support, subprocess cache increase
 
+## Releases
+- Create a new GitHub release when making changes to the script
+- Tag format: `v1.0.0`, `v1.1.0`, etc.
+- Include `thumbfast-jellyfin.lua` and `thumbfast.conf` in each release
+- Update `CHANGELOG.md` before releasing
+- Use semantic versioning: patch for fixes, minor for features, major for breaking changes
+
 ## Related Projects
 - https://github.com/po5/thumbfast — original thumbnailer
 - https://github.com/iwalton3/jf-mpv-osc — Jellyfin-styled OSC (uses thumbfast)
