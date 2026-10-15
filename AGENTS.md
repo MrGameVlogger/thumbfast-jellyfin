@@ -25,13 +25,13 @@
 6. Displays thumbnails via offset arithmetic
 
 ## Important Notes
-- Uses `run_subprocess` helper for macOS PATH compatibility (ffmpeg at `/opt/homebrew/bin/ffmpeg`)
+- Uses `run_subprocess` helper for macOS PATH compatibility (ffmpeg resolved at startup from common paths, Homebrew first)
 - Cache key: `{itemId}_{scaledW}x{scaledH}_{tilesX}x{tilesY}.bgra`
 - HiDPI scaling: dimensions multiplied by `display-hidpi-scale` property
 - Falls back to normal thumbfast subprocess for non-Jellyfin content
 
 ## Upstream Sync
-- `thumbfast-upstream.lua` in mpv config is the verified upstream copy
+- `thumbfast-upstream.lua.bak` in the mpv-config repo is the verified upstream copy
 - Check https://github.com/po5/thumbfast for updates
 - Local modifications: Trickplay support, subprocess cache increase
 
@@ -44,5 +44,5 @@
 
 ## Related Projects
 - https://github.com/po5/thumbfast — original thumbnailer
-- https://github.com/iwalton3/jf-mpv-osc — Jellyfin-styled OSC (uses thumbfast)
+- https://github.com/MrGameVlogger/jf-mpv-osc — Jellyfin-styled OSC (uses thumbfast; this script provides its seek previews)
 - https://github.com/MrGameVlogger/Jellyfin_mpv_play — Jellyfin client for mpv
