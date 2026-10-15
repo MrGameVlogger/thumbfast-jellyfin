@@ -54,6 +54,7 @@ Copy `thumbfast.conf` to your mpv script-opts directory.
 
 thumbfast-jellyfin is compatible with any OSC that supports the original thumbfast:
 
+- [trickplay-jf-osc](https://github.com/MrGameVlogger/jf-mpv-osc) — Jellyfin-styled OSC (this script provides its seek previews)
 - [uosc](https://github.com/tomasklaen/uosc)
 - [ModernX](https://github.com/cyl0/ModernX)
 - [progressbar](https://github.com/torque/mpv-progressbar)
