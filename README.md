@@ -301,7 +301,7 @@ thumbfast-jellyfin is designed for any mpv setup that plays content from a Jelly
 
 ### Jellyfin Clients
 
-- **[Jellyfin MPV Play](https://github.com/MrGameVlogger/Jellyfin_mpv_play)** — Native macOS/Windows/Linux client that launches mpv as a separate process. thumbfast-jellyfin provides instant thumbnails for the seekbar.
+- **[Jellyfin MPV Play](https://github.com/MrGameVlogger/jellyfin-mpv-play)** — Native macOS/Windows/Linux client that launches mpv as a separate process. thumbfast-jellyfin provides instant thumbnails for the seekbar.
 - **[jellyfin-mpv-shim](https://github.com/jellyfin/jellyfin-mpv-shim)** — Python-based Jellyfin client. thumbfast-jellyfin works alongside it to provide Trickplay thumbnails.
 - **[jf-mpv-osc](https://github.com/iwalton3/jf-mpv-osc)** — Jellyfin-styled OSC for mpv. Uses thumbfast for seekbar previews — thumbfast-jellyfin provides the Trickplay data.
 
@@ -323,7 +323,7 @@ thumbfast-jellyfin is designed for any mpv setup that plays content from a Jelly
 
 - [thumbfast](https://github.com/po5/thumbfast) — Original thumbnailer (our upstream)
 - [jf-mpv-osc](https://github.com/iwalton3/jf-mpv-osc) — Jellyfin-styled OSC for mpv
-- [Jellyfin MPV Play](https://github.com/MrGameVlogger/Jellyfin_mpv_play) — Jellyfin client for mpv
+- [Jellyfin MPV Play](https://github.com/MrGameVlogger/jellyfin-mpv-play) — Jellyfin client for mpv
 - [jellyfin-mpv-shim](https://github.com/jellyfin/jellyfin-mpv-shim) — Official Jellyfin mpv client
 - [ModernX](https://github.com/cyl0/ModernX) — Modern OSC for mpv
 - [uosc](https://github.com/tomasklaen/uosc) — Minimalist OSC

@@ -45,4 +45,4 @@
 ## Related Projects
 - https://github.com/po5/thumbfast — original thumbnailer
 - https://github.com/MrGameVlogger/jf-mpv-osc — Jellyfin-styled OSC (uses thumbfast; this script provides its seek previews)
-- https://github.com/MrGameVlogger/Jellyfin_mpv_play — Jellyfin client for mpv
+- https://github.com/MrGameVlogger/jellyfin-mpv-play — Jellyfin client for mpv
