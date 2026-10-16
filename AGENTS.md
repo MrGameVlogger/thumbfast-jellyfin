@@ -26,6 +26,10 @@
 
 ## Important Notes
 - Uses `run_subprocess` helper for macOS PATH compatibility (ffmpeg resolved at startup from common paths, Homebrew first)
+- Server base URL is the stream URL prefix before `/Videos/` — works for root-hosted (`http://host:8096`) and subpath (`http://host/jellyfin`) servers
+- User lookup uses `/Users/Me` (works for non-admin/multi-user servers), falling back to `/Users`
+- Tile downloads and ffmpeg conversions run asynchronously; a process-global load generation cancels in-flight work on file change (never per-instance — a fresh mpv would collide with mapped files of the previous generation)
+- Cached strips are validated against their recorded frame count before use (a short file would SIGBUS mpv's mmap on seek) and the cache is bounded by `cache_max_mb` (oldest first, tracked in `index.txt`)
 - Cache key: `{itemId}_{scaledW}x{scaledH}_{tilesX}x{tilesY}.bgra`
 - HiDPI scaling: dimensions multiplied by `display-hidpi-scale` property
 - Falls back to normal thumbfast subprocess for non-Jellyfin content
