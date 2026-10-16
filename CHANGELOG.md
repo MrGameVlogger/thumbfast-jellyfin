@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026-10-16
+
+### Fixed
+- The Jellyfin API token no longer appears in the curl process list: the auth header travels via curl's stdin config (`-K -`) instead of `-H` in argv
+- Overlay is removed before cache files are unlinked on file change/shutdown (never unlink a file mpv may still have mapped)
+- Worker command values are quoted (edition names containing spaces broke `set edition …`)
+- Version probe for pre-0.33 mpv restored (was hardcoded); duplicate `os_name` declaration removed
+
 ## [1.1.0] - 2026-10-16
 
 ### Fixed
