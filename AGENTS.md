@@ -37,7 +37,7 @@
 ## Upstream Sync
 - `thumbfast-upstream.lua.bak` in the mpv-config repo is the verified upstream copy
 - Check https://github.com/po5/thumbfast for updates
-- Local modifications: Trickplay support, subprocess cache increase
+- Local modifications: Jellyfin Trickplay support (the Trickplay section) plus its async pipeline, strip cache, and hardening — the decode-worker path and its demuxer args are upstream's, unchanged
 
 ## Releases
 - Create a new GitHub release when making changes to the script
