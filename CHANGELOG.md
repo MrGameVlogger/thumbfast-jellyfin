@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.2] - 2026-10-16
+
+### Fixed
+- A cancelled tile load could leak its temporary BGRA strip and file handle in the narrow window where the download callback lands after a file change (all cancel paths now discard idempotently)
+- Cache hits left the internal loading flag set
+- Thumbnail dimensions were never re-reported when Trickplay took over the overlay (submenus sized themselves from the fallback dimensions); also fixes a nil-global call that guard introduced
+- `spawn_first` could start the decode worker while a Trickplay load was still pending
+- Degenerate Trickplay dimensions are rejected instead of dividing by zero; item IDs accept dashed/uppercase GUIDs
+- Removed writes to shadowed globals (`spawned`/`spawn_waiting`) in the Trickplay path
+
 ## [1.1.1] - 2026-10-16
 
 ### Fixed
