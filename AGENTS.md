@@ -40,11 +40,21 @@
 - Local modifications: Jellyfin Trickplay support (the Trickplay section) plus its async pipeline, strip cache, and hardening — the decode-worker path and its demuxer args are upstream's, unchanged
 
 ## Releases
-- Create a new GitHub release when making changes to the script
+Every change to the script gets a release — the mpv-config vendor and
+standalone users pin these.
+
+1. Add a `CHANGELOG.md` section (Keep a Changelog format)
+2. Open a PR and merge it (squash)
+3. `gh release create vX.Y.Z --repo MrGameVlogger/thumbfast-jellyfin --title "vX.Y.Z" --notes-file <changelog-section> thumbfast-jellyfin.lua thumbfast.conf`
+   The release mints the tag at main; a bare `git tag vX.Y.Z` fails in
+   non-interactive terminals (use `git tag -a vX.Y.Z -m "vX.Y.Z"` if you
+   must tag first)
+4. Sync the vendored copy: `mpv-config`'s `scripts/thumbfast.lua` must stay
+   byte-identical (PR there + bump its version pin + `git -C ~/.config/mpv pull`)
+
 - Tag format: `v1.0.0`, `v1.1.0`, etc.
 - Include `thumbfast-jellyfin.lua` and `thumbfast.conf` in each release
-- Update `CHANGELOG.md` before releasing
-- Use semantic versioning: patch for fixes, minor for features, major for breaking changes
+- Semantic versioning: patch for fixes, minor for features, major for breaking changes
 
 ## Related Projects
 - https://github.com/po5/thumbfast — original thumbnailer
