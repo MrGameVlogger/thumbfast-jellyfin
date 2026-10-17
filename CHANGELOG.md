@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.3] - 2026-10-16
+
+### Fixed
+- Jellyfin 12 support: the Trickplay dictionary is now `{itemId: {width: info}}`; older servers send `{width: [info]}` and both parse. Previously Jellyfin 12's GUID keys failed the width parse and every item reported "No Trickplay data"
+
 ## [1.1.2] - 2026-10-16
 
 ### Fixed
