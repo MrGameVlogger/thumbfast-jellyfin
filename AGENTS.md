@@ -17,12 +17,13 @@
 - Both must be accessible (found at startup via common paths)
 
 ## How It Works
-1. On file load, detects Jellyfin streams by URL pattern (`/Videos/{id}/stream?api_key={key}`)
-2. Fetches Trickplay metadata from Jellyfin API (`/Users/{id}/Items/{id}`)
-3. Downloads all tile images from `/Videos/{id}/Trickplay/{width}/{index}.jpg`
-4. Concatenates into one flat BGRA file (per jf-mpv-osc README optimization)
-5. Caches locally in `/tmp/thumbfast-jellyfin-cache/`
-6. Displays thumbnails via offset arithmetic
+1. On file load, detects Jellyfin streams by URL pattern (`/Videos/{id}/stream` with `ApiKey=`/`api_key=`)
+2. Fetches Trickplay metadata from Jellyfin API (`/Users/Me` then `/Users/{id}/Items/{id}` — `/Users` is only the legacy fallback: it returns every user to any caller, so `users[1]` can be the wrong one)
+3. Parses both Trickplay dictionary shapes: Jellyfin 12+ sends `{itemId: {width: info}}`, ≤10.9 sends `{width: [info]}` — the nested shape silently yielded "No Trickplay data" for every item until v1.1.3
+4. Downloads all tile images from `/Videos/{id}/Trickplay/{width}/{index}.jpg`
+5. Concatenates into one flat BGRA file (per jf-mpv-osc README optimization)
+6. Caches locally in `/tmp/thumbfast-jellyfin-cache/`
+7. Displays thumbnails via offset arithmetic
 
 ## Important Notes
 - Uses `run_subprocess` helper for macOS PATH compatibility (ffmpeg resolved at startup from common paths, Homebrew first)
