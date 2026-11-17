@@ -2,21 +2,21 @@
 
 [![License: MPL-2.0](https://img.shields.io/badge/License-MPL_2.0-blue.svg)](LICENSE)
 [![mpv](https://img.shields.io/badge/mpv-v0.38.0+-green.svg)](https://mpv.io/)
-[![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macos%20%7C%20windows-lightgrey.svg)]()
+![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macos%20%7C%20windows-lightgrey.svg)
 [![GitHub release](https://img.shields.io/github/v/release/MrGameVlogger/thumbfast-jellyfin)](https://github.com/MrGameVlogger/thumbfast-jellyfin/releases)
 
 A drop-in replacement for [thumbfast](https://github.com/po5/thumbfast) that fetches pre-generated thumbnails from Jellyfin's Trickplay API instead of spawning a subprocess for local thumbnail generation.
 
-**Fork of [po5/thumbfast](https://github.com/po5/thumbfast)** — adds Jellyfin Trickplay support while maintaining full compatibility with the original script.
+**Fork of [po5/thumbfast](https://github.com/po5/thumbfast).** Adds Jellyfin Trickplay support and stays fully compatible with the original script.
 
 ## Features
 
-- **Instant thumbnails** — Fetches pre-generated Trickplay tiles from Jellyfin server
-- **No subprocess overhead** — No need to decode video locally for thumbnails
-- **HiDPI support** — Automatically scales thumbnails for Retina/HiDPI displays
-- **Aspect ratio preservation** — Maintains correct 16:9 (or original) aspect ratio
-- **Fallback support** — Falls back to normal thumbfast for non-Jellyfin content
-- **Drop-in replacement** — Compatible with any thumbfast-compatible OSC
+- **Instant thumbnails.** Fetches pre-generated Trickplay tiles from the Jellyfin server
+- **No subprocess overhead.** Video is never decoded locally to make thumbnails
+- **HiDPI support.** Thumbnail dimensions are multiplied by the display scale factor
+- **Aspect ratio preservation.** Thumbnails match the Trickplay tile's ratio (16:9 or the original)
+- **Fallback support.** Non-Jellyfin content uses the normal thumbfast subprocess
+- **Drop-in replacement.** Works with any thumbfast-compatible OSC
 
 ## Requirements
 
@@ -28,7 +28,7 @@ A drop-in replacement for [thumbfast](https://github.com/po5/thumbfast) that fet
 
 ## Installation
 
-### 1. Backup original thumbfast
+### 1. Back up the original thumbfast
 
 ```bash
 cp ~/.config/mpv/scripts/thumbfast.lua ~/.config/mpv/scripts/thumbfast-upstream.lua
@@ -50,12 +50,12 @@ Copy `thumbfast.conf` to your mpv script-opts directory.
 - Linux/macOS: `~/.config/mpv/script-opts/`
 - Windows: `%APPDATA%\mpv\script-opts\`
 
-## UI Support
+## UI support
 
 thumbfast-jellyfin is compatible with any OSC that supports the original thumbfast:
 
-- **mpv 0.42+ stock [osc.lua](https://mpv.io)** — supported natively via the OSC Preview API
-- [trickplay-jf-osc](https://github.com/MrGameVlogger/jf-mpv-osc) — Jellyfin-styled OSC (this script provides its seek previews)
+- **mpv 0.42+ stock [osc.lua](https://mpv.io):** supported natively through the OSC Preview API
+- [jf-mpv-osc](https://github.com/MrGameVlogger/jf-mpv-osc) (fork of [iwalton3/jf-mpv-osc](https://github.com/iwalton3/jf-mpv-osc)): Jellyfin-styled OSC with Material icons, action sheets, and a skip intro button. This script provides its seek previews
 - [uosc](https://github.com/tomasklaen/uosc)
 - [ModernX](https://github.com/cyl0/ModernX)
 - [progressbar](https://github.com/torque/mpv-progressbar)
@@ -74,26 +74,33 @@ box. On older mpv, use the [osc.lua fork](https://github.com/po5/thumbfast/blob/
 
 > **Only one thumbnailer script:** the mpv docs warn against enabling multiple
 > thumbnailer scripts at once (the Preview API expects a single one). Keep only
-> thumbfast-jellyfin installed — if you also have upstream `thumbfast.lua` or
+> thumbfast-jellyfin installed. If you also have upstream `thumbfast.lua` or
 > another thumbnailer, remove it.
 
-## mpv Frontends
+## Jellyfin clients
 
-[ImPlay](https://tsl0922.github.io/ImPlay/) is auto-detected, but if you encounter issues set `mpv_path=ImPlay` in `script-opts/thumbfast.conf`.
+thumbfast-jellyfin is designed for any mpv setup that plays content from a Jellyfin server. It works especially well with:
 
-[mpv.net](https://github.com/mpvnet-player/mpv.net) is directly supported since v7, no special configuration is required.
+- **[Jellyfin MPV Play](https://github.com/MrGameVlogger/jellyfin-mpv-play):** native macOS/Windows/Linux client that launches mpv as a separate process. thumbfast-jellyfin provides instant thumbnails for the seekbar.
+- **[jellyfin-mpv-shim](https://github.com/jellyfin/jellyfin-mpv-shim):** Python-based Jellyfin client. thumbfast-jellyfin works alongside it to provide Trickplay thumbnails.
 
-Other frontends and older versions of mpv.net will need [standalone mpv](https://mpv.io/installation/) accessible within PATH. The easiest way is to copy standalone mpv files inside of your frontend's installation folder.
+## mpv frontends
 
-## macOS Notes
+[ImPlay](https://tsl0922.github.io/ImPlay/) is auto-detected, but if you encounter issues, set `mpv_path=ImPlay` in `script-opts/thumbfast.conf`.
 
-If your mpv install is an app bundle (e.g. stolendata builds), the script will work but you may notice the Dock shakes when generating the first thumbnail. To fix this, make sure the app is in your Applications folder, then run:
+[mpv.net](https://github.com/mpvnet-player/mpv.net) is directly supported since v7. No special configuration is required.
+
+Other frontends and older versions of mpv.net will need [standalone mpv](https://mpv.io/installation/) accessible within PATH. The easiest way is to copy the standalone mpv files into your frontend's installation folder.
+
+## macOS notes
+
+If your mpv install is an app bundle (for example, stolendata builds), the script will work, but the Dock icon may shake when the first thumbnail is generated. To fix this, make sure the app is in your Applications folder, then run:
 
 ```bash
 sudo ln -s /Applications/mpv.app/Contents/MacOS/mpv /usr/local/mpv
 ```
 
-If you installed mpv via [Homebrew](https://brew.sh/), there are no issues.
+If you installed mpv via [Homebrew](https://brew.sh/), this does not happen.
 
 ## Configuration
 
@@ -157,7 +164,7 @@ cacert=
 > If you have an old `lua-settings/thumbfast.lua`, move it to
 > `script-opts/thumbfast.conf`.
 
-### Option Details
+### Option details
 
 | Option | Default | Description |
 |--------|---------|-------------|
@@ -179,29 +186,29 @@ cacert=
 | `tls_verify` | yes | Verify TLS certificates (set `no` for self-signed servers) |
 | `cacert` | *(empty)* | Custom CA certificate/bundle path (alternative to `tls_verify=no`) |
 
-## Jellyfin Setup
+## Jellyfin setup
 
 ### Enable Trickplay
 
-1. Open Jellyfin Dashboard
-2. Go to **Libraries** → Select your library
+1. Open the Jellyfin dashboard
+2. Open **Libraries** and select your library
 3. Enable **Trickplay**
-4. Run **Scheduled Tasks** → **Generate Trickplay Images**
+4. In **Scheduled Tasks**, run **Generate Trickplay Images**
 
 ### Verify Trickplay is working
 
-1. Open a video in Jellyfin web UI
+1. Open a video in the Jellyfin web UI
 2. Hover over the seekbar
 3. You should see thumbnail previews
 
-## How It Works
+## How it works
 
-1. **Detection** — On file load, detects Jellyfin streams by URL pattern (`/Videos/{id}/stream?api_key={key}`)
-2. **Metadata** — Fetches Trickplay metadata from Jellyfin API (`/Users/{id}/Items/{id}`)
-3. **Download** — Downloads tile images (JPEG grids of thumbnails) from `/Videos/{id}/Trickplay/{width}/{index}.jpg`
-4. **Convert** — Converts tiles to BGRA format using ffmpeg, scaling to match display dimensions
-5. **Display** — Thumbnails are displayed instantly from server-side data
-6. **Fallback** — For non-Jellyfin content, falls back to normal thumbfast subprocess
+1. On file load, the script detects Jellyfin streams by URL pattern (`/Videos/{id}/stream?api_key={key}`)
+2. It fetches Trickplay metadata from the Jellyfin API (`/Users/{id}/Items/{id}`)
+3. It downloads tile images (JPEG grids of thumbnails) from `/Videos/{id}/Trickplay/{width}/{index}.jpg`
+4. It converts the tiles to BGRA with ffmpeg and scales them to the display size
+5. It displays the thumbnails through mpv's overlay API
+6. For non-Jellyfin content, it falls back to the normal thumbfast subprocess
 
 ## Troubleshooting
 
@@ -209,7 +216,7 @@ cacert=
 
 1. Check if Trickplay is enabled on your Jellyfin server
 2. Verify Trickplay images have been generated for your media
-3. Check mpv log for `[thumbfast]` messages:
+3. Check the mpv log for `[thumbfast]` messages:
    ```bash
    grep -i "thumbfast\|trickplay" ~/.config/mpv/mpv.log
    ```
@@ -247,12 +254,12 @@ as well. For a Jellyfin server behind a self-signed certificate:
 2. In `script-opts/thumbfast.conf`, set `tls_verify=no` (or point `cacert=` at
    your CA certificate) so this script can reach the Jellyfin API
 
-`cacert` is the better option when you control the certificate: it keeps
+`cacert` is the better option when you control the certificate, since it keeps
 verification enabled.
 
-## For UI Developers
+## For UI developers
 
-This API usage example code is [CC0 (public domain)](https://creativecommons.org/share-your-work/public-domain/cc0/).
+The example code in this section is [CC0 (public domain)](https://creativecommons.org/share-your-work/public-domain/cc0/).
 
 ### thumbfast state variable
 
@@ -284,7 +291,7 @@ end)
 
 ### Request thumbnails
 
-When user hovers on seekbar:
+When the user hovers over the seekbar:
 
 ```lua
 if not thumbfast.disabled then
@@ -298,7 +305,7 @@ end
 
 ### Clear thumbnails
 
-When user leaves seekbar:
+When the user leaves the seekbar:
 
 ```lua
 if thumbfast.available then
@@ -320,7 +327,7 @@ property to `nil` to clear the thumbnail. See mpv's `osc.rst` ("OSC Preview
 API") for the full contract. Only one thumbnailer script should be active
 when using this API.
 
-## Differences from Upstream
+## Differences from upstream
 
 | Feature | thumbfast | thumbfast-jellyfin |
 |---------|-----------|-------------------|
@@ -332,15 +339,15 @@ when using this API.
 
 ## License
 
-This project is licensed under the Mozilla Public License 2.0 - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Mozilla Public License 2.0. See the [LICENSE](LICENSE) file for details.
 
 This is a fork of [thumbfast](https://github.com/po5/thumbfast) by [po5](https://github.com/po5), which is also licensed under MPL-2.0.
 
 ## Credits
 
-- [thumbfast](https://github.com/po5/thumbfast) by [po5](https://github.com/po5) — Original thumbnailer script
-- [Jellyfin](https://jellyfin.org/) — Trickplay API
-- [mpv](https://mpv.io/) — Media player
+- [thumbfast](https://github.com/po5/thumbfast) by [po5](https://github.com/po5): the original thumbnailer script
+- [Jellyfin](https://jellyfin.org/): the Trickplay API
+- [mpv](https://mpv.io/): the media player
 
 ## Contributing
 
@@ -348,37 +355,4 @@ This is a fork of [thumbfast](https://github.com/po5/thumbfast) by [po5](https:/
 2. Create a feature branch
 3. Commit your changes
 4. Push to the branch
-5. Create a Pull Request
-
-## Designed For
-
-thumbfast-jellyfin is designed for any mpv setup that plays content from a Jellyfin server. It works especially well with:
-
-### Jellyfin Clients
-
-- **[Jellyfin MPV Play](https://github.com/MrGameVlogger/jellyfin-mpv-play)** — Native macOS/Windows/Linux client that launches mpv as a separate process. thumbfast-jellyfin provides instant thumbnails for the seekbar.
-- **[jellyfin-mpv-shim](https://github.com/jellyfin/jellyfin-mpv-shim)** — Python-based Jellyfin client. thumbfast-jellyfin works alongside it to provide Trickplay thumbnails.
-- **[jf-mpv-osc](https://github.com/MrGameVlogger/jf-mpv-osc)** (fork of [iwalton3/jf-mpv-osc](https://github.com/iwalton3/jf-mpv-osc)) — Jellyfin-styled OSC for mpv. Uses thumbfast for seekbar previews — thumbfast-jellyfin provides the Trickplay data.
-
-### OSCs (On-Screen Controllers)
-
-- **[jf-mpv-osc](https://github.com/MrGameVlogger/jf-mpv-osc)** — Jellyfin-styled OSC with Material icons, action sheets, and skip intro button
-- **[ModernX](https://github.com/cyl0/ModernX)** — Modern, sleek OSC for mpv
-- **[uosc](https://github.com/tomasklaen/uosc)** — Minimalist OSC
-- Any other thumbfast-compatible OSC
-
-### Use Cases
-
-- **Watching Jellyfin content in mpv** — Instant thumbnails when hovering over the seekbar
-- **Network streaming** — No need to decode video locally for thumbnails
-- **HiDPI displays** — Automatic scaling for Retina/HiDPI displays
-- **Mixed content** — Falls back to normal thumbfast for local files
-
-## Related Projects
-
-- [thumbfast](https://github.com/po5/thumbfast) — Original thumbnailer (our upstream)
-- [jf-mpv-osc](https://github.com/MrGameVlogger/jf-mpv-osc) — Jellyfin-styled OSC for mpv (fork of [iwalton3/jf-mpv-osc](https://github.com/iwalton3/jf-mpv-osc))
-- [Jellyfin MPV Play](https://github.com/MrGameVlogger/jellyfin-mpv-play) — Jellyfin client for mpv
-- [jellyfin-mpv-shim](https://github.com/jellyfin/jellyfin-mpv-shim) — Official Jellyfin mpv client
-- [ModernX](https://github.com/cyl0/ModernX) — Modern OSC for mpv
-- [uosc](https://github.com/tomasklaen/uosc) — Minimalist OSC
+5. Create a pull request

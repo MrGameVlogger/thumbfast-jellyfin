@@ -5,21 +5,21 @@
 - Based on thumbfast by po5: https://github.com/po5/thumbfast
 - License: MPL-2.0 (same as upstream)
 
-## Key Files
-- `thumbfast-jellyfin.lua` — main script
-- `thumbfast.conf` — default config for Jellyfin users
-- `CHANGELOG.md` — version history
-- `CONTRIBUTING.md` — contribution guidelines
+## Key files
+- `thumbfast-jellyfin.lua`: main script
+- `thumbfast.conf`: default config for Jellyfin users
+- `CHANGELOG.md`: version history
+- `CONTRIBUTING.md`: contribution guidelines
 
 ## Dependencies
-- `curl` — for API requests to Jellyfin server
-- `ffmpeg` — for converting Trickplay tiles to BGRA format
+- `curl`: for API requests to the Jellyfin server
+- `ffmpeg`: for converting Trickplay tiles to BGRA format
 - Both must be accessible (found at startup via common paths)
 
-## How It Works
+## How it works
 1. On file load, detects Jellyfin streams by URL pattern (`/Videos/{id}/stream` with `ApiKey=`/`api_key=`)
-2. Fetches Trickplay metadata from Jellyfin API (`/Users/Me` then `/Users/{id}/Items/{id}` — `/Users` is only the legacy fallback: it returns every user to any caller, so `users[1]` can be the wrong one)
-3. Parses both Trickplay dictionary shapes: Jellyfin 12+ sends `{itemId: {width: info}}`, ≤10.9 sends `{width: [info]}` — the nested shape silently yielded "No Trickplay data" for every item until v1.1.3
+2. Fetches Trickplay metadata from the Jellyfin API (`/Users/Me` then `/Users/{id}/Items/{id}`). `/Users` is only the legacy fallback: it returns every user to any caller, so `users[1]` can be the wrong one
+3. Parses both Trickplay dictionary shapes: Jellyfin 12+ sends `{itemId: {width: info}}`, ≤10.9 sends `{width: [info]}`. The nested shape silently yielded "No Trickplay data" for every item until v1.1.3
 4. Downloads all tile images from `/Videos/{id}/Trickplay/{width}/{index}.jpg`
 5. Concatenates into one flat BGRA file (per jf-mpv-osc README optimization)
 6. Caches locally in `/tmp/thumbfast-jellyfin-cache/`
@@ -28,11 +28,11 @@
    (`thumbfast-info`/`thumb`/`clear`) and mpv 0.42's OSC Preview API
    (`user-data/osc/draw-preview`, including the ASS border decoration)
 
-## Important Notes
+## Important notes
 - Uses `run_subprocess` helper for macOS PATH compatibility (ffmpeg resolved at startup from common paths, Homebrew first)
-- Server base URL is the stream URL prefix before `/Videos/` — works for root-hosted (`http://host:8096`) and subpath (`http://host/jellyfin`) servers
+- Server base URL is the stream URL prefix before `/Videos/`. It works for root-hosted (`http://host:8096`) and subpath (`http://host/jellyfin`) servers
 - User lookup uses `/Users/Me` (works for non-admin/multi-user servers), falling back to `/Users`
-- Tile downloads and ffmpeg conversions run asynchronously; a process-global load generation cancels in-flight work on file change (never per-instance — a fresh mpv would collide with mapped files of the previous generation)
+- Tile downloads and ffmpeg conversions run asynchronously; a process-global load generation cancels in-flight work on file change (never per-instance, since a fresh mpv would collide with mapped files of the previous generation)
 - Cached strips are validated against their recorded frame count before use (a short file would SIGBUS mpv's mmap on seek) and the cache is bounded by `cache_max_mb` (oldest first, tracked in `index.txt`)
 - Cache key: `{itemId}_{scaledW}x{scaledH}_{tilesX}x{tilesY}.bgra`
 - HiDPI scaling: dimensions multiplied by `display-hidpi-scale` property
@@ -44,17 +44,17 @@
   `--hwdec-software-fallback` on mpv 0.40+, the deprecated legacy names on
   older workers (renamed upstream in 0.40; the aliases will eventually go)
 
-## Upstream Sync
-- `backup/thumbfast-upstream.lua` in the mpv-config repo is the verified upstream copy (kept out of its `scripts/` dir — mpv attempts to load every file there)
+## Upstream sync
+- `backup/thumbfast-upstream.lua` in the mpv-config repo is the verified upstream copy (kept out of its `scripts/` dir, since mpv attempts to load every file there)
 - Check https://github.com/po5/thumbfast for updates
 - Local modifications: Jellyfin Trickplay support (the Trickplay section) plus
   its async pipeline, strip cache, and hardening; OSC Preview API support
   (`user-data/osc/draw-preview` + display-size override in the draw paths);
-  TLS options (`tls_verify`/`cacert`); decode-worker option-name version probe
-  — the worker's demuxer args are otherwise upstream's, unchanged
+  TLS options (`tls_verify`/`cacert`); decode-worker option-name version probe.
+  The worker's demuxer args are otherwise upstream's, unchanged
 
 ## Releases
-Every change to the script gets a release — the mpv-config vendor and
+Every change to the script gets a release. The mpv-config vendor and
 standalone users pin these.
 
 1. Add a `CHANGELOG.md` section (Keep a Changelog format)
@@ -68,15 +68,15 @@ standalone users pin these.
    - New script-opts must also be documented in mpv-config's
      `script-opts/thumbfast.conf` comments (at their defaults; never touch
      user-tuned values). The conf is user-owned and outside the byte-identical
-     contract, so it drifts silently otherwise — `mp.options.read_options`
-     falls back to script defaults for missing keys and nothing breaks, the
+     contract, so it drifts silently otherwise. `mp.options.read_options`
+     falls back to script defaults for missing keys and nothing breaks. The
      knobs just go undocumented (this is how `cache_max_mb` was missed).
 
 - Tag format: `v1.0.0`, `v1.1.0`, etc.
 - Include `thumbfast-jellyfin.lua` and `thumbfast.conf` in each release
 - Semantic versioning: patch for fixes, minor for features, major for breaking changes
 
-## Related Projects
-- https://github.com/po5/thumbfast — original thumbnailer
-- https://github.com/MrGameVlogger/jf-mpv-osc — Jellyfin-styled OSC (uses thumbfast; this script provides its seek previews)
-- https://github.com/MrGameVlogger/jellyfin-mpv-play — Jellyfin client for mpv
+## Related projects
+- https://github.com/po5/thumbfast: original thumbnailer
+- https://github.com/MrGameVlogger/jf-mpv-osc: Jellyfin-styled OSC (uses thumbfast; this script provides its seek previews)
+- https://github.com/MrGameVlogger/jellyfin-mpv-play: Jellyfin client for mpv
