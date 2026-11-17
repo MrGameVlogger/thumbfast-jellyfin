@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-11-17
+
+### Added
+- OSC Preview API support (`user-data/osc/draw-preview`, mpv 0.42+): the stock
+  mpv OSC now shows seekbar previews without any fork. Both the Trickplay path
+  and the local fallback honor the OSC-requested display size, and the OSC's
+  optional ASS decoration (thumbnail border) is rendered. The classic
+  thumbfast script-message protocol keeps working unchanged for uosc,
+  trickplay-jf-osc and friends
+- `tls_verify` and `cacert` options for self-signed HTTPS Jellyfin servers
+  (applies to curl requests and the fallback thumbnail worker, which runs
+  `--no-config` and therefore never sees mpv.conf TLS settings)
+
+### Changed
+- Decode worker now uses `--load-console` / `--hwdec-software-fallback` when
+  the worker mpv is 0.40+ (version-probed at startup). The pre-0.40 names are
+  kept for older workers; upstream renamed both options in mpv 0.40 and the
+  deprecated aliases will eventually be removed
+- Documentation: mpv 0.42 notes — stock osc.lua support, the `--tls-verify`
+  default change for stream playback, and `lua-settings/` no longer being read
+
 ## [1.1.4] - 2026-10-18
 
 ### Fixed

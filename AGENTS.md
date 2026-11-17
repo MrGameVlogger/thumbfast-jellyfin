@@ -24,6 +24,9 @@
 5. Concatenates into one flat BGRA file (per jf-mpv-osc README optimization)
 6. Caches locally in `/tmp/thumbfast-jellyfin-cache/`
 7. Displays thumbnails via offset arithmetic
+8. Speaks both OSC protocols: the classic thumbfast script-messages
+   (`thumbfast-info`/`thumb`/`clear`) and mpv 0.42's OSC Preview API
+   (`user-data/osc/draw-preview`, including the ASS border decoration)
 
 ## Important Notes
 - Uses `run_subprocess` helper for macOS PATH compatibility (ffmpeg resolved at startup from common paths, Homebrew first)
@@ -33,12 +36,22 @@
 - Cached strips are validated against their recorded frame count before use (a short file would SIGBUS mpv's mmap on seek) and the cache is bounded by `cache_max_mb` (oldest first, tracked in `index.txt`)
 - Cache key: `{itemId}_{scaledW}x{scaledH}_{tilesX}x{tilesY}.bgra`
 - HiDPI scaling: dimensions multiplied by `display-hidpi-scale` property
-- Falls back to normal thumbfast subprocess for non-Jellyfin content
+- Falls back to normal thumbfast subprocess for non-Jellyfin content (also for
+  Jellyfin items without Trickplay data)
+- `tls_verify`/`cacert` options cover curl requests and the fallback worker;
+  the worker runs `--no-config`, so mpv.conf TLS settings never reach it
+- Decode-worker option names are version-probed at startup: `--load-console` /
+  `--hwdec-software-fallback` on mpv 0.40+, the deprecated legacy names on
+  older workers (renamed upstream in 0.40; the aliases will eventually go)
 
 ## Upstream Sync
 - `backup/thumbfast-upstream.lua` in the mpv-config repo is the verified upstream copy (kept out of its `scripts/` dir — mpv attempts to load every file there)
 - Check https://github.com/po5/thumbfast for updates
-- Local modifications: Jellyfin Trickplay support (the Trickplay section) plus its async pipeline, strip cache, and hardening — the decode-worker path and its demuxer args are upstream's, unchanged
+- Local modifications: Jellyfin Trickplay support (the Trickplay section) plus
+  its async pipeline, strip cache, and hardening; OSC Preview API support
+  (`user-data/osc/draw-preview` + display-size override in the draw paths);
+  TLS options (`tls_verify`/`cacert`); decode-worker option-name version probe
+  — the worker's demuxer args are otherwise upstream's, unchanged
 
 ## Releases
 Every change to the script gets a release — the mpv-config vendor and
