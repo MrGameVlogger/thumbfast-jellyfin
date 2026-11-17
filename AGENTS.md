@@ -65,6 +65,12 @@ standalone users pin these.
    must tag first)
 4. Sync the vendored copy: `mpv-config`'s `scripts/thumbfast.lua` must stay
    byte-identical (PR there + bump its version pin + `git -C ~/.config/mpv pull`)
+   - New script-opts must also be documented in mpv-config's
+     `script-opts/thumbfast.conf` comments (at their defaults; never touch
+     user-tuned values). The conf is user-owned and outside the byte-identical
+     contract, so it drifts silently otherwise — `mp.options.read_options`
+     falls back to script defaults for missing keys and nothing breaks, the
+     knobs just go undocumented (this is how `cache_max_mb` was missed).
 
 - Tag format: `v1.0.0`, `v1.1.0`, etc.
 - Include `thumbfast-jellyfin.lua` and `thumbfast.conf` in each release
