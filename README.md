@@ -54,6 +54,7 @@ Copy `thumbfast.conf` to your mpv script-opts directory.
 
 thumbfast-jellyfin is compatible with any OSC that supports the original thumbfast:
 
+- **mpv 0.42+ stock [osc.lua](https://mpv.io)** — supported natively via the OSC Preview API
 - [trickplay-jf-osc](https://github.com/MrGameVlogger/jf-mpv-osc) — Jellyfin-styled OSC (this script provides its seek previews)
 - [uosc](https://github.com/tomasklaen/uosc)
 - [ModernX](https://github.com/cyl0/ModernX)
@@ -62,9 +63,19 @@ thumbfast-jellyfin is compatible with any OSC that supports the original thumbfa
 - [modern](https://github.com/maoiscat/mpv-osc-modern/tree/with.thumbfast)
 - [oscc](https://github.com/longtermfree/oscc)
 - [mfpbar](https://codeberg.org/NRK/mpv-toolbox/src/branch/master/mfpbar)
-- [osc.lua](https://github.com/po5/thumbfast/blob/vanilla-osc/player/lua/osc.lua) (vanilla UI fork)
+- [osc.lua](https://github.com/po5/thumbfast/blob/vanilla-osc/player/lua/osc.lua) (vanilla UI fork, for mpv < 0.42)
 
-For the vanilla mpv UI, use the [osc.lua fork](https://github.com/po5/thumbfast/blob/vanilla-osc/player/lua/osc.lua) from the original thumbfast repo.
+Both OSC communication protocols are supported at the same time: the classic
+thumbfast script-messages (`thumbfast-info`/`thumb`/`clear`) and the mpv 0.42
+OSC Preview API (`user-data/osc/draw-preview`).
+
+For the vanilla mpv UI on mpv 0.42+, the built-in `osc.lua` works out of the
+box. On older mpv, use the [osc.lua fork](https://github.com/po5/thumbfast/blob/vanilla-osc/player/lua/osc.lua) from the original thumbfast repo.
+
+> **Only one thumbnailer script:** the mpv docs warn against enabling multiple
+> thumbnailer scripts at once (the Preview API expects a single one). Keep only
+> thumbfast-jellyfin installed — if you also have upstream `thumbfast.lua` or
+> another thumbnailer, remove it.
 
 ## mpv Frontends
 
@@ -130,7 +141,21 @@ direct_io=no
 
 # Custom path to the mpv executable
 mpv_path=mpv
+
+# Cache limit in MB for downloaded Trickplay strips (oldest evicted first)
+cache_max_mb=2048
+
+# Verify TLS certificates (curl requests and the fallback thumbnail worker)
+# Set to no for self-signed certificates
+tls_verify=yes
+
+# Custom CA certificate (or bundle) to trust instead of disabling verification
+cacert=
 ```
+
+> **Note:** since mpv 0.42, `lua-settings/` is no longer read for script config.
+> If you have an old `lua-settings/thumbfast.lua`, move it to
+> `script-opts/thumbfast.conf`.
 
 ### Option Details
 
@@ -150,6 +175,9 @@ mpv_path=mpv
 | `hwdec` | yes | Enable hardware decoding |
 | `direct_io` | no | Windows: direct pipe writing (requires LuaJIT) |
 | `mpv_path` | mpv | Path to mpv executable |
+| `cache_max_mb` | 2048 | Cache limit for Trickplay strips (oldest evicted first) |
+| `tls_verify` | yes | Verify TLS certificates (set `no` for self-signed servers) |
+| `cacert` | *(empty)* | Custom CA certificate/bundle path (alternative to `tls_verify=no`) |
 
 ## Jellyfin Setup
 
@@ -209,6 +237,19 @@ curl is included by default on most systems. If missing:
 - **macOS:** `xcode-select --install`
 - **Windows:** Included in Windows 10+
 
+### Self-signed HTTPS servers (TLS errors)
+
+Since mpv 0.42, TLS certificates are verified by default for stream playback
+as well. For a Jellyfin server behind a self-signed certificate:
+
+1. In `mpv.conf`, add `--tls-verify=no` (or `--tls-ca-file=/path/to/ca.pem`) so
+   mpv can open the video stream
+2. In `script-opts/thumbfast.conf`, set `tls_verify=no` (or point `cacert=` at
+   your CA certificate) so this script can reach the Jellyfin API
+
+`cacert` is the better option when you control the certificate: it keeps
+verification enabled.
+
 ## For UI Developers
 
 This API usage example code is [CC0 (public domain)](https://creativecommons.org/share-your-work/public-domain/cc0/).
@@ -264,6 +305,20 @@ if thumbfast.available then
     mp.commandv("script-message-to", "thumbfast", "clear")
 end
 ```
+
+### OSC Preview API (mpv 0.42+)
+
+mpv 0.42's built-in OSC uses a different, standardized channel: it writes
+requests to the `user-data/osc/draw-preview` property instead of sending
+script-messages. thumbfast-jellyfin implements this API too, so custom OSCs
+can use either protocol (or both) without conflicts.
+
+The property is set to a table with `x`, `y` (top-left draw position), `w`,
+`h` (display size), `hover-sec` (timestamp) and an optional `ass` string (a
+decoration such as a border, rendered alongside the thumbnail). Set the
+property to `nil` to clear the thumbnail. See mpv's `osc.rst` ("OSC Preview
+API") for the full contract. Only one thumbnailer script should be active
+when using this API.
 
 ## Differences from Upstream
 
