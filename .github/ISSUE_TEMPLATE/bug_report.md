@@ -12,7 +12,7 @@ A clear and concise description of what the bug is.
 **To reproduce**
 Steps to reproduce the behavior:
 1. Go to '...'
-2. Hover on seekbar
+2. Hover over the seekbar
 3. See error
 
 **Expected behavior**
@@ -21,7 +21,7 @@ A clear and concise description of what you expected to happen.
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-**Environment:**
+**Environment**
 - OS: [e.g. macOS 14, Ubuntu 22.04, Windows 11]
 - mpv version: [e.g. 0.38.0]
 - OSC: [e.g. ModernX, uosc]
